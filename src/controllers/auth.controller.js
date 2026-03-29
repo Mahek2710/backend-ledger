@@ -31,11 +31,12 @@ async function userRegisterController(req,res){
 
     const token = jwt.sign({
         id:user._id
-    }, process.env.jwt_secret, {
+    }, process.env.JWT_SECRET, {
         expiresIn:"3d"
     });
 
-    res.cookies("token",token);
+    res.cookie("token",token);
+
     return res.status(201).json({
         user:{
             _id:user._id,
@@ -49,6 +50,54 @@ async function userRegisterController(req,res){
 
 }
 
+/**
+ *  - User Login Controller
+ *  - POST /api/auth/login
+ */
+
+async function userLoginController(req, res) {
+    const { email, password } = req.body;
+
+    const user = await userModel.findOne({
+        email: email
+    }).select("+password"); // IMPORTANT
+
+    if (!user) {
+        return res.status(401).json({
+            message: "Email or Password is INVALID"
+        });
+    }
+
+    const isValidPassword = await user.comparePassword(password);
+
+    if (!isValidPassword) {
+        return res.status(401).json({
+            message: "Email or Password is INVALID"
+        });
+    }
+
+    const token = jwt.sign(
+        { id: user._id },
+        process.env.JWT_SECRET,
+        { expiresIn: "3d" }
+    );
+
+    res.cookie("token", token);
+
+    return res.status(200).json({
+        user: {
+            _id: user._id,
+            email: user.email,
+            name: user.name
+        },
+        token
+    });
+}
+
+
+
+
 module.exports = {
-    userRegisterController
+    userRegisterController,
+    userLoginController
 }
