@@ -38,3 +38,38 @@ const mongoose = require('mongoose');
         return res.status(404).json({message:"One or both accounts not found"});
     }
  }
+ /**
+  * 2. Validate idempotency key
+  */
+
+ const isTransactionAlreadyExists = await transactionModel.findOne({
+    idempotencyKey: idempotencyKey
+ })
+
+ if(isTransactionAlreadyExists){
+    if(isTransactionAlreadyExists.status === "COMPLETED"){
+        return res.status(200).json({message:"Transaction already completed",transaction:isTransactionAlreadyExists});
+    }
+
+    if(isTransactionAlreadyExists.status === "PENDING"){
+        return res.status(200).json({message:"Transaction is still processing",transaction:isTransactionAlreadyExists});
+    }
+    if(isTransactionAlreadyExists.status === "FAILED"){
+        return res.status(500).json({message:"Transaction failed",transaction:isTransactionAlreadyExists});
+    }
+    if(isTransactionAlreadyExists.status === "REVERSED"){
+        return res.status(200).json({message:"Transaction was reversed",transaction:isTransactionAlreadyExists});
+    }
+ }
+
+ /**
+  * 3. Check account status
+  */
+
+ if(fromUserAccount.status !== "ACTIVE" || toUserAccount.status !== "ACTIVE"){
+    return res.status(400).json({message:"One or both accounts are not active"});
+ }
+
+ /**
+  * 4. Derive sender balance from ledger
+  */
