@@ -47,4 +47,19 @@ async function sendRegisterationEmail(userEmail, name) {
   await sendEmail(userEmail, subject, text, html);
 }
 
-module.exports = { sendEmail, sendRegisterationEmail };
+async function sendTransactionEmail(userEmail, name, amount, fromAccount, toAccount) {
+  const subject = 'Transaction Successful!';
+  const text = `Hello ${name},\n\nYour transaction of amount ${amount} from account ${fromAccount} to account ${toAccount} was successful.`;
+  const html = `<p>Hello ${name},</p><p>Your transaction of amount <b>${amount}</b> from account <b>${fromAccount}</b> to account <b>${toAccount}</b> was successful.</p>`;
+  await sendEmail(userEmail, subject, text, html);
+}
+
+async function sendTransactionFailureEmail(userEmail, name, amount, fromAccount, toAccount, reason) {
+  const subject = 'Transaction Failed!';
+  const text = `Hello ${name},\n\nYour transaction of amount ${amount} from account ${fromAccount} to account ${toAccount} failed. Reason: ${reason}`;
+  const html = `<p>Hello ${name},</p><p>Your transaction of amount <b>${amount}</b> from account <b>${fromAccount}</b> to account <b>${toAccount}</b> failed.</p><p>Reason: ${reason}</p>`;
+  await sendEmail(userEmail, subject, text, html);
+}
+
+
+module.exports = { sendEmail, sendRegisterationEmail, sendTransactionEmail, sendTransactionFailureEmail };
